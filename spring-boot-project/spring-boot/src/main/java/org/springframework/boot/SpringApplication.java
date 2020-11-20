@@ -293,22 +293,32 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 开启计时器
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 发布一些事件 listener.onApplicationEvent(event)
 		listeners.starting();
 		try {
+			//java -jar test.jar iamnonoption --app.name=CmdRulez --app.hosts=abc,def,ghi --app.name=2
+			//args比如输入： --mykey=myvalue  --mykey=myvalue2 那么可以通过下面方式获取输入的args值
+			// configurableApplicationContext.getEnvironment().getProperty(“mykey”);
+			// 还可以通过ApplicationArguments获取参数信息
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			configureIgnoreBeanInfo(environment);
 			Banner printedBanner = printBanner(environment);
+			// 创建AnnotationConfigServletWebServerApplicationContext上下文环境继承了ConfigurableApplicationContext
+			// 所以也初始化了ConfigurableApplicationContext对象
 			context = createApplicationContext();
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
+			// 准备环境，将一些bean通过ConfigurableListableBeanFactory初始化
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+			// 里面调用spring容器中的方法，初始化bean
 			refreshContext(context);
 			afterRefresh(context, applicationArguments);
 			stopWatch.stop();
@@ -399,6 +409,15 @@ public class SpringApplication {
 		}
 	}
 
+	/**
+	 * 1. 什么是 java.awt.headless？
+	 * Headless模式是系统的一种配置模式。在系统可能缺少显示设备、键盘或鼠标这些外设的情况下可以使用该模式。
+	 *
+	 * 2. 何时使用和headless mode？
+	 * Headless模式虽然不是我们愿意见到的，但事实上我们却常常需要在该模式下工作，尤其是服务器端程序开发者。
+	 * 因为服务器（如提供Web服务的主机）往往可能缺少前述设备，但又需要使用他们提供的功能，生成相应的数据，
+	 * 以提供给客户端（如浏览器所在的配有相关的显示设备、键盘和鼠标的主机）。
+	 */
 	private void configureHeadlessProperty() {
 		System.setProperty(SYSTEM_PROPERTY_JAVA_AWT_HEADLESS,
 				System.getProperty(SYSTEM_PROPERTY_JAVA_AWT_HEADLESS, Boolean.toString(this.headless)));
@@ -414,6 +433,14 @@ public class SpringApplication {
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}
 
+	/**
+	 *
+	 * @param type SpringApplicationRunListener
+	 * @param parameterTypes types = new Class<?>[] { SpringApplication.class, String[].class };
+	 * @param args
+	 * @param <T>
+	 * @return
+	 */
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
@@ -429,6 +456,7 @@ public class SpringApplication {
 		List<T> instances = new ArrayList<>(names.size());
 		for (String name : names) {
 			try {
+				// 加载对象ConfigurationWarningsApplicationContextInitializer
 				Class<?> instanceClass = ClassUtils.forName(name, classLoader);
 				Assert.isAssignable(type, instanceClass);
 				Constructor<?> constructor = instanceClass.getDeclaredConstructor(parameterTypes);
