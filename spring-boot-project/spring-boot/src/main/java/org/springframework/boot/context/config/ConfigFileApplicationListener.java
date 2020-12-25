@@ -174,7 +174,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		List<EnvironmentPostProcessor> postProcessors = loadPostProcessors();
 		postProcessors.add(this);
 		AnnotationAwareOrderComparator.sort(postProcessors);
-		for (EnvironmentPostProcessor postProcessor : postProcessors) {
+		for (EnvironmentPostProcessor postProcessor : postProcessors) { // ConfigFileApplicationListener 加载application.yml等文件
 			postProcessor.postProcessEnvironment(event.getEnvironment(), event.getSpringApplication());
 		}
 	}
@@ -201,6 +201,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	 */
 	protected void addPropertySources(ConfigurableEnvironment environment, ResourceLoader resourceLoader) {
 		RandomValuePropertySource.addToEnvironment(environment);
+		// 加载application为文件
 		new Loader(environment, resourceLoader).load();
 	}
 
@@ -309,6 +310,10 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 					getClass().getClassLoader());
 		}
 
+		/**
+		 * 加载配置到 {@link Document}
+		 *
+		 */
 		public void load() {
 			this.profiles = new LinkedList<>();
 			this.processedProfiles = new LinkedList<>();
@@ -324,6 +329,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 				this.processedProfiles.add(profile);
 			}
 			resetEnvironmentProfiles(this.processedProfiles);
+			// 加载配置
 			load(null, this::getNegativeProfileFilter, addToLoaded(MutablePropertySources::addFirst, true));
 			addLoadedPropertySources();
 		}
@@ -478,6 +484,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		private void load(PropertySourceLoader loader, String location, Profile profile, DocumentFilter filter,
 				DocumentConsumer consumer) {
 			try {
+				// 获取资源路径
 				Resource resource = this.resourceLoader.getResource(location);
 				if (resource == null || !resource.exists()) {
 					if (this.logger.isTraceEnabled()) {
@@ -496,6 +503,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 					return;
 				}
 				String name = "applicationConfig: [" + location + "]";
+				// 加载配置
 				List<Document> documents = loadDocuments(loader, name, resource);
 				if (CollectionUtils.isEmpty(documents)) {
 					if (this.logger.isTraceEnabled()) {

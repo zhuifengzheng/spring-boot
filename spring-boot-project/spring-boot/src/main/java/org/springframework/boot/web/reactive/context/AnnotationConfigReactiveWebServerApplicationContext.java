@@ -199,6 +199,10 @@ public class AnnotationConfigReactiveWebServerApplicationContext extends Reactiv
 		super.prepareRefresh();
 	}
 
+	/**
+	 * 这里可以扫描basePackages路径下的bean，加载到spring容器中
+	 * @param beanFactory
+	 */
 	@Override
 	protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		super.postProcessBeanFactory(beanFactory);

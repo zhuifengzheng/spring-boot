@@ -24,7 +24,12 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 @SpringBootApplication
 public class SampleTomcatApplication {
@@ -49,7 +54,24 @@ public class SampleTomcatApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(SampleTomcatApplication.class, args);
+//		Map<String,Object> map = new HashMap<>();
+////		map.putIfAbsent("1",1);
+//		Object o = map.computeIfAbsent("1", k -> new SampleTomcatApplication().test(k));
+//		LinkedList linkedList = (LinkedList)map.computeIfAbsent("2", k -> new LinkedList<>());
+//
+//		System.out.println(o);
+//		linkedList.add("1");
+//		LinkedList linkedList2 = (LinkedList)map.computeIfAbsent("2", k -> new LinkedList<>());
+//		linkedList2.add("2");
+//		System.out.println(linkedList2);
+		ConfigurableApplicationContext run =
+				SpringApplication.run(SampleTomcatApplication.class, args);
+		System.out.println("bean 最后定义数量为："+run.getBeanDefinitionCount());
+	}
+
+	public String test(String str){
+
+		return str+"test";
 	}
 
 }

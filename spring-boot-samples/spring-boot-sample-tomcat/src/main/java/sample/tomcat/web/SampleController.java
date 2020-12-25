@@ -16,6 +16,8 @@
 
 package sample.tomcat.web;
 
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import sample.tomcat.handler.MyBean;
 import sample.tomcat.service.HelloWorldService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +26,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
+@EnableAspectJAutoProxy
 public class SampleController {
 
 	@Autowired
 	private HelloWorldService helloWorldService;
 
+	@Autowired
+	private MyBean myBean;
+
 	@GetMapping("/")
 	@ResponseBody
 	public String helloWorld() {
+		// 这里能拿到在postProcessBeanDefinitionRegistry方法中实例的bean
+		System.out.println(myBean.getName());
 		return this.helloWorldService.getHelloMessage();
 	}
 
